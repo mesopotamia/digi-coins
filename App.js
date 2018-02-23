@@ -1,8 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {Coin} from './components/Coin';
+import Header from './components/Header';
+import FiatSymbol from './components/FiatSymbol';
 
 const USD_CURRENCY = "USD";
+const CANADA_CURRENCY = "CAD";
 const BTC = "BTC";
 
 export default class App extends React.Component {
@@ -10,14 +13,18 @@ export default class App extends React.Component {
         super(props);
         this.state = {
             btcPrice: null,
-            fiatCurrency: USD_CURRENCY,
+            fiatCurrency: CANADA_CURRENCY,
             cryptoCurrency: "ETH",
-            coins: null
+            coins: null,
+            loading: true
         };
     }
     componentDidMount() {
         // this.fetchInitialCoins();
         this.fetchMultipleCoins();
+        window.setTimeout(()=> {
+            this.fetchMultipleCoins();
+        }, 10000)
     }
     fetchInitialCoins () {
         const currency = this.state.fiatCurrency;
@@ -54,7 +61,7 @@ export default class App extends React.Component {
         }
         const preferredCurrency = this.state.fiatCurrency;
         return coins.map(({name, price}) =>
-            (<Coin cryptoSymbol={name} fiatSymbol={preferredCurrency} price={price}/>)
+            (<Coin key={name} cryptoSymbol={name} fiatSymbol={preferredCurrency} price={price}/>)
         );
     }
 
@@ -64,17 +71,43 @@ export default class App extends React.Component {
         const price = this.state.btcPrice;
         return (
             <View style={styles.container}>
-                {this.getListOfCoins()}
+                <View style={styles.banner}>
+                    <Text style={styles.logo}>Digi Coins</Text>
+                    <FiatSymbol symbol={currency}/>
+                </View>
+                <Header/>
+                <View style={styles.coinList}>
+                    {this.getListOfCoins()}
+                </View>
             </View>
         );
     }
 }
 
+const MAIN_SIDE_PADDING = 20;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
+    banner: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        backgroundColor: '#eee',
+        width: '100%',
+        height: 80,
+        padding: MAIN_SIDE_PADDING
+    },
+    coinList: {
+        flex: 1,
+        paddingLeft: MAIN_SIDE_PADDING,
+        paddingRight: MAIN_SIDE_PADDING,
+        justifyContent: 'space-around'
+    },
+    logo: {
+        color: '#272727',
+        fontSize: 16
+    }
 });
