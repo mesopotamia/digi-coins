@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, ActivityIndicator} from 'react-native';
 import {Coin} from './components/Coin';
 import Header from './components/Header';
 import FiatSymbol from './components/FiatSymbol';
@@ -16,30 +16,22 @@ export default class App extends React.Component {
             fiatCurrency: CANADA_CURRENCY,
             cryptoCurrency: "ETH",
             coins: null,
-            loading: true
+            isLoading: true,
+            refreshRate: 100000
         };
     }
     componentDidMount() {
         // this.fetchInitialCoins();
         this.fetchMultipleCoins();
-        window.setTimeout(()=> {
+        window.setInterval(()=> {
             this.fetchMultipleCoins();
-        }, 10000)
-    }
-    fetchInitialCoins () {
-        const currency = this.state.fiatCurrency;
-        const crypto = this.state.cryptoCurrency;
-        return fetch(`https://min-api.cryptocompare.com/data/price?fsym=${crypto}&tsyms=${currency}`)
-            .then((response) => response.json())
-            .then((responseJson) => {
-                this.setState({btcPrice: responseJson[this.state.fiatCurrency]});
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+        }, this.state.refreshRate)
     }
     fetchMultipleCoins () {
         const preferredCurrency = this.state.fiatCurrency;
+        this.setState({
+            isLoading: true
+        });
         return fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XRP&tsyms=${preferredCurrency}`)
             .then((response) => response.json())
             .then((responseJSON) => {
@@ -48,6 +40,9 @@ export default class App extends React.Component {
                 this.setState({
                     coins
                 });
+                window.setTimeout(() => {
+                    this.setState({isLoading: false})
+                }, 2000);
                 console.log('got coins', coins);
             })
             .catch((error) => {
@@ -69,10 +64,14 @@ export default class App extends React.Component {
         const currency = this.state.fiatCurrency;
         const crypto = this.state.cryptoCurrency;
         const price = this.state.btcPrice;
+        const activityIndicator = this.state.isLoading ?  (<View style={styles.activityIndicator}>
+                <ActivityIndicator color="#2196F3"/>
+            </View>) : null;
         return (
             <View style={styles.container}>
                 <View style={styles.banner}>
                     <Text style={styles.logo}>Digi Coins</Text>
+                    {activityIndicator}
                     <FiatSymbol symbol={currency}/>
                 </View>
                 <Header/>
