@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         backgroundColor: '#ddd',
-        paddingVertical: 20
+        padding: 20
     },
     column: {
         width: '20%'
