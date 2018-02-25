@@ -7,6 +7,7 @@ export const Coin = ({cryptoSymbol, fiatSymbol, price}) => (
     <View style={styles.coin}>
         <Text style={styles.column}>{cryptoSymbol}</Text>
         <Text style={styles.column}>{price}</Text>
+        <Text style={styles.column}>{price}</Text>
     </View>
 );
 
@@ -14,7 +15,8 @@ const styles = StyleSheet.create({
     coin: {
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        paddingVertical: 10
     },
     column: {
         width: '20%'

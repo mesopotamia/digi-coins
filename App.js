@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, View, ActivityIndicator} from 'react-native';
+import {StyleSheet, Text, View, ActivityIndicator, ScrollView, RefreshControl} from 'react-native';
 import {Coin} from './components/Coin';
 import Header from './components/Header';
 import FiatSymbol from './components/FiatSymbol';
@@ -17,15 +17,17 @@ export default class App extends React.Component {
             cryptoCurrency: "ETH",
             coins: null,
             isLoading: true,
-            refreshRate: 100000
+            refreshRate: null
         };
     }
     componentDidMount() {
         // this.fetchInitialCoins();
         this.fetchMultipleCoins();
-        window.setInterval(()=> {
-            this.fetchMultipleCoins();
-        }, this.state.refreshRate)
+        if (this.state.refreshRate) {
+            window.setInterval(()=> {
+                this.fetchMultipleCoins();
+            }, this.state.refreshRate)
+        }
     }
     fetchMultipleCoins () {
         const preferredCurrency = this.state.fiatCurrency;
@@ -59,25 +61,31 @@ export default class App extends React.Component {
             (<Coin key={name} cryptoSymbol={name} fiatSymbol={preferredCurrency} price={price}/>)
         );
     }
+    _onRefresh () {
+        this.fetchMultipleCoins();
+    }
 
     render() {
         const currency = this.state.fiatCurrency;
         const crypto = this.state.cryptoCurrency;
         const price = this.state.btcPrice;
-        const activityIndicator = this.state.isLoading ?  (<View style={styles.activityIndicator}>
-                <ActivityIndicator color="#2196F3"/>
-            </View>) : null;
         return (
             <View style={styles.container}>
                 <View style={styles.banner}>
                     <Text style={styles.logo}>Digi Coins</Text>
-                    {activityIndicator}
                     <FiatSymbol symbol={currency}/>
                 </View>
                 <Header/>
-                <View style={styles.coinList}>
+                <ScrollView contentContainerStyle={styles.coinList}
+                            refreshControl={
+                                <RefreshControl
+                                    refreshing={this.state.isLoading}
+                                    onRefresh={this._onRefresh.bind(this)}
+                                />
+                            }
+                >
                     {this.getListOfCoins()}
-                </View>
+                </ScrollView>
             </View>
         );
     }
@@ -101,9 +109,7 @@ const styles = StyleSheet.create({
     },
     coinList: {
         flex: 1,
-        paddingLeft: MAIN_SIDE_PADDING,
-        paddingRight: MAIN_SIDE_PADDING,
-        justifyContent: 'space-around'
+        paddingHorizontal: MAIN_SIDE_PADDING
     },
     logo: {
         color: '#272727',
