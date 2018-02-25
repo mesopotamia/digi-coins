@@ -8,6 +8,12 @@ const USD_CURRENCY = "USD";
 const CANADA_CURRENCY = "CAD";
 const BTC = "BTC";
 
+const profile = {
+    BTC: 100,
+    ETH: 200,
+    XRP: 100000
+};
+
 export default class App extends React.Component {
     constructor (props) {
         super(props);
@@ -58,7 +64,7 @@ export default class App extends React.Component {
         }
         const preferredCurrency = this.state.fiatCurrency;
         return coins.map(({name, price}) =>
-            (<Coin key={name} cryptoSymbol={name} fiatSymbol={preferredCurrency} price={price}/>)
+            (<Coin key={name} cryptoSymbol={name} fiatSymbol={preferredCurrency} price={price} numberOfCoins={profile[name]}/>)
         );
     }
     _onRefresh () {
