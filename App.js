@@ -1,10 +1,11 @@
 import React from 'react';
-import {StyleSheet, Text, View, ActivityIndicator, ScrollView, RefreshControl} from 'react-native';
+import {StyleSheet, Text, View, ActivityIndicator, ScrollView, RefreshControl, Picker} from 'react-native';
 import {Coin} from './components/Coin';
 import Header from './components/Header';
 import FiatSymbol from './components/FiatSymbol';
 import TotalNetWorth from './components/TotalNetWorth';
 import {getNetworth} from "./Util/common";
+import PreferredCurrencyPicker from "./components/PreferredCurrencyPicker";
 
 const USD_CURRENCY = "USD";
 const CANADA_CURRENCY = "CAD";
@@ -26,7 +27,8 @@ export default class App extends React.Component {
             coins: null,
             isLoading: true,
             refreshRate: null,
-            netWorth: null
+            netWorth: null,
+            isEditMode: false
         };
     }
     componentDidMount() {
@@ -80,11 +82,14 @@ export default class App extends React.Component {
         const currency = this.state.fiatCurrency;
         const crypto = this.state.cryptoCurrency;
         const price = this.state.btcPrice;
+        const preferredCurrencyDisplay = this.state.isEditMode ?
+            (<PreferredCurrencyPicker fiatCurrency={this.state.fiatCurrency} currencyHandler={(currency) => this.setState({fiatCurrency: currency, isEditMode: false})}/>)
+            : null;
         return (
             <View style={styles.container}>
                 <View style={styles.banner}>
                     <Text style={styles.logo}>Digi Coins</Text>
-                    <FiatSymbol symbol={currency}/>
+                    <FiatSymbol symbol={currency} clickHandler={() => this.setState({isEditMode: true})}/>
                 </View>
                 <Header/>
                 <TotalNetWorth netWorth={this.state.netWorth}/>
@@ -98,6 +103,7 @@ export default class App extends React.Component {
                 >
                     {this.getListOfCoins()}
                 </ScrollView>
+                {preferredCurrencyDisplay}
             </View>
         );
     }
