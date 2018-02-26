@@ -3,6 +3,8 @@ import {StyleSheet, Text, View, ActivityIndicator, ScrollView, RefreshControl} f
 import {Coin} from './components/Coin';
 import Header from './components/Header';
 import FiatSymbol from './components/FiatSymbol';
+import TotalNetWorth from './components/TotalNetWorth';
+import {getNetworth} from "./Util/common";
 
 const USD_CURRENCY = "USD";
 const CANADA_CURRENCY = "CAD";
@@ -23,7 +25,8 @@ export default class App extends React.Component {
             cryptoCurrency: "ETH",
             coins: null,
             isLoading: true,
-            refreshRate: null
+            refreshRate: null,
+            netWorth: null
         };
     }
     componentDidMount() {
@@ -45,11 +48,13 @@ export default class App extends React.Component {
             .then((responseJSON) => {
                 // {"BTC":{"CAD":13843.34},"ETH":{"CAD":1099.59},"XRP":{"CAD":1.27}}
                 const coins = Object.keys(responseJSON).map((item) => ({name: item, price: responseJSON[item][preferredCurrency]}));
-                this.setState({
-                    coins
-                });
+                const netWorth = getNetworth(coins, profile);
                 window.setTimeout(() => {
-                    this.setState({isLoading: false})
+                    this.setState({
+                        isLoading: false,
+                        coins,
+                        netWorth
+                    })
                 }, 2000);
                 console.log('got coins', coins);
             })
@@ -82,6 +87,7 @@ export default class App extends React.Component {
                     <FiatSymbol symbol={currency}/>
                 </View>
                 <Header/>
+                <TotalNetWorth netWorth={this.state.netWorth}/>
                 <ScrollView contentContainerStyle={styles.coinList}
                             refreshControl={
                                 <RefreshControl
