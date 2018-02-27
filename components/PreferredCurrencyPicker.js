@@ -1,5 +1,6 @@
 import React from 'react';
 import {Text, View, Picker, TouchableHighlight, StyleSheet, Dimensions} from 'react-native';
+import currencyMap from 'currency-symbol-map/map';
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
 const WINDOW_WIDTH = Dimensions.get('window').width;
@@ -15,8 +16,7 @@ export default class PreferredCurrencyPicker extends React.Component {
                 <Picker
                     selectedValue={this.props.fiatCurrency}
                     onValueChange={(itemValue, itemIndex) => this.props.currencyHandler(itemValue)}>
-                    <Picker.Item label="USD" value="USD"/>
-                    <Picker.Item label="CAD" value="CAD"/>
+                    {this.getItems()}
                 </Picker>
             </View>
         )
@@ -27,6 +27,11 @@ export default class PreferredCurrencyPicker extends React.Component {
         });
         console.log('clicking');
     }
+    getItems = () => {
+        return Object.keys(currencyMap).map((symbol) => (
+            <Picker.Item key={symbol} label={symbol} value={symbol}/>
+        ))
+    };
 }
 
 const styles = StyleSheet.create({
