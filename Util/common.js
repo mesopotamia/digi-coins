@@ -6,3 +6,7 @@ export const getNetworth = (coins, profile) => {
         return result;
     }, 0);
 };
+export const checkIfCompareCryptoResponseIsInvalid = (response) => {
+    /*If compareCrypto has a message key then it's determined to be invalid*/
+    return response.Message;
+};

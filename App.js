@@ -4,12 +4,15 @@ import {Coin} from './components/Coin';
 import Header from './components/Header';
 import FiatSymbol from './components/FiatSymbol';
 import TotalNetWorth from './components/TotalNetWorth';
-import {getNetworth} from "./Util/common";
+import {checkIfCompareCryptoResponseIsInvalid, getNetworth} from "./Util/common";
 import PreferredCurrencyPicker from "./components/PreferredCurrencyPicker";
 
 const USD_CURRENCY = "USD";
 const CANADA_CURRENCY = "CAD";
 const BTC = "BTC";
+const COIN_LOAD_DELAY = 2000;
+const PRICE_INFO_FAIL_MESSAGE = `Failed to load price information. 
+It's possible that the currency you've selected is not supported.`;
 
 const profile = {
     BTC: 100,
@@ -28,7 +31,8 @@ export default class App extends React.Component {
             isLoading: true,
             refreshRate: null,
             netWorth: null,
-            isEditMode: false
+            isEditMode: false,
+            hasCoinsFailedToLoad: false
         };
     }
     componentDidMount() {
@@ -48,20 +52,29 @@ export default class App extends React.Component {
         return fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,XRP&tsyms=${preferredCurrency}`)
             .then((response) => response.json())
             .then((responseJSON) => {
-                // {"BTC":{"CAD":13843.34},"ETH":{"CAD":1099.59},"XRP":{"CAD":1.27}}
+                console.log(responseJSON);
+                if (checkIfCompareCryptoResponseIsInvalid(responseJSON)) {
+                    throw new Error('invalid response from comparecrypto API');
+                }
                 const coins = Object.keys(responseJSON).map((item) => ({name: item, price: responseJSON[item][preferredCurrency]}));
                 const netWorth = getNetworth(coins, profile);
                 window.setTimeout(() => {
                     this.setState({
                         isLoading: false,
+                        hasCoinsFailedToLoad: false,
                         coins,
                         netWorth
                     })
-                }, 2000);
-                console.log('got coins', coins);
+                }, COIN_LOAD_DELAY);
             })
             .catch((error) => {
                 console.log('something went wrong', error);
+                window.setTimeout(() => {
+                    this.setState({
+                        isLoading: false,
+                        hasCoinsFailedToLoad: true
+                    });
+            }, COIN_LOAD_DELAY);
             })
     }
     getListOfCoins () {
@@ -85,6 +98,9 @@ export default class App extends React.Component {
         const preferredCurrencyDisplay = this.state.isEditMode ?
             (<PreferredCurrencyPicker fiatCurrency={this.state.fiatCurrency} currencyHandler={(currency) => this.setState({fiatCurrency: currency, isEditMode: false})}/>)
             : null;
+        const coinsDisplay = this.state.hasCoinsFailedToLoad ?
+            (<Text>{PRICE_INFO_FAIL_MESSAGE}</Text>)
+            : this.getListOfCoins();
         return (
             <View style={styles.container}>
                 <View style={styles.banner}>
@@ -101,7 +117,7 @@ export default class App extends React.Component {
                                 />
                             }
                 >
-                    {this.getListOfCoins()}
+                    {coinsDisplay}
                 </ScrollView>
                 {preferredCurrencyDisplay}
             </View>
